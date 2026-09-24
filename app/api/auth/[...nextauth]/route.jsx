@@ -3,7 +3,10 @@ import GithubProvider from "next-auth/providers/github";
 // import GoogleProvider from "next-auth/providers/google";
 // import FacebookProvider from "next-auth/providers/facebook";
 // import EmailProvider from "next-auth/providers/email";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
+import connectDb from "@/app/db/connectDb";
+import User from "@/app/models/Users";
+
 
 const authOptions = nextAuth({
   // Configure one or more authentication providers
@@ -28,21 +31,22 @@ const authOptions = nextAuth({
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       if(account.provider=="github"){
-        const client = await mongoose.connect("mongodb://localhost:27017/chai");
-        const currentUser = User.findOne({ email: email });
+        await connectDb();
+        const currentUser = await User.findOne({ email: email });
         if(!currentUser){
-          const newUser = new User({
+          const newUser = await User.create({
             username: user.email.split('@')[0],
             email: user.email,
           })
-          await newUser.save();
+          user.name = newUser.username;
         }
         return true;
       }
     },  
     async session({ session, token, user }) {
-      const dbUser = await User.find({ email: session.user.email });
-      session.user.username = dbUser.username;
+      const dbUser = await User.findOne({ email: session.user.email });
+      console.log(dbUser);
+      session.user.name = dbUser.username;
       return session;
     }
   }

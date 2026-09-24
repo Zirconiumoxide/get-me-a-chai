@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSession, signIn, signOut } from "next-auth/react"
 import { useRouter } from 'next/navigation'
-import { fetchuser, updateProfile } from '@/actions/useractions'
+import { fetchUser, updateProfile } from '@/actions/useractions'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Bounce } from 'react-toastify';
@@ -11,6 +11,7 @@ const Dashboard = () => {
     const { data: session, update } = useSession()
     const router = useRouter()
     const [form, setform] = useState({})
+    const [setShowPassword, setSetShowPassword] = useState(second)
 
     useEffect(() => {
         console.log(session)
@@ -24,8 +25,7 @@ const Dashboard = () => {
     }, [])
 
     const getData = async () => {
-        let u = await fetchuser(session.user.name)
-        let u = {}
+        let u = await fetchUser(session.user.name)
         setform(u)
     }
 
@@ -101,13 +101,13 @@ const Dashboard = () => {
                     </div>
                     {/* input razorpay id */}
                     <div className="my-2">
-                        <label htmlFor="razorpayid" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razorpay Id</label>
-                        <input value={form.razorpayid ? form.razorpayid : ""} onChange={handleChange} type="text" name='razorpayid' id="razorpayid" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        <label htmlFor="razorpayId" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razorpay Id</label>
+                        <input value={form.razorpayId ? form.razorpayId : ""} onChange={handleChange} type="text" name='razorpayId' id="razorpayId" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                     </div>
                     {/* input razorpay secret */}
                     <div className="my-2">
-                        <label htmlFor="razorpaysecret" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razorpay Secret</label>
-                        <input value={form.razorpaysecret ? form.razorpaysecret : ""} onChange={handleChange} type="text" name='razorpaysecret' id="razorpaysecret" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        <label htmlFor="razorpaySecret" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razorpay Secret</label>
+                        <input value={form.razorpaySecret ? form.razorpaySecret : ""} onChange={handleChange} type="password" name='razorpaySecret' id="razorpaySecret" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                     </div>
 
                     {/* Submit Button  */}

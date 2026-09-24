@@ -80,20 +80,21 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    href={`/${session.user.name}`}
                     className="inline-flex items-center w-full p-2 hover:bg-gray-700 hover:text-white rounded cursor-pointer"
                   >
                     Your Page
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
+                    href="/"
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="inline-flex items-center w-full p-2 hover:bg-gray-700 hover:text-white rounded cursor-pointer"
                   >
                     Sign out
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
