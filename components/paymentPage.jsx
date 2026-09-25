@@ -5,8 +5,14 @@ import Script from "next/script";
 import { initiate, fetchUser, fetchPayments } from "@/actions/useractions.js";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/navigation";
 
 const PaymentPage = ({ username }) => {
+  const router = useRouter();
+  const {data: session, status} = useSession();
   const [paymentForm, setPaymentForm] = useState({
     name: "",
     message: "",
@@ -14,17 +20,38 @@ const PaymentPage = ({ username }) => {
   });
   const [currentUser, setCurrentUser] = useState({});
   const [payments, setPayments] = useState([]);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    getData();
-  }, []);
+    if(status==="authenticated"){
+      getData();
+    }
+  }, [status, session, username]);
+
+  useEffect(() => {
+    if(searchParams.get("paymentdone")=="true") {
+      toast("Thanks for the payment", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+    }
+    router.push(`/${username}`);
+  }, [])
+  
 
   const handleChange = (e) => {
     setPaymentForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const getData = async (params) => {
-    let u = await fetchUser(username);
+    let u = await fetchUser(session.user.email);
     setCurrentUser(u);
     let dbpayments = await fetchPayments(username);
     setPayments(dbpayments);
@@ -38,7 +65,7 @@ const PaymentPage = ({ username }) => {
     let a = await initiate(amount, username, updatedPaymentForm);
     let orderId = a.id;
     var options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Enter the Key ID generated from the Dashboard
+      key: currentUser.razorpayId, // Enter the Key ID generated from the Dashboard
       amount: amount, // Amount is in currency subunits.
       currency: "INR",
       name: "BuyMeAChai", //your business name
@@ -65,6 +92,18 @@ const PaymentPage = ({ username }) => {
 
   return (
     <>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Script src="https://checkout.razorpay.com/v1/checkout.js"></Script>
 
       <div className="cover w-full bg-red-50 relative">
@@ -73,11 +112,9 @@ const PaymentPage = ({ username }) => {
           src={currentUser.coverPic}
           alt=""
         />
-        <div className="absolute -bottom-20 border border-white rounded-full right-[46%]">
+        <div className="absolute -bottom-20 border border-white rounded-full right-[46%] overflow-hidden size-32">
           <img
-            width={150}
-            height={150}
-            className="rounded-full"
+            className="rounded-full object-cover size-32"
             src={currentUser.profilePic}
             alt=""
           />
@@ -85,9 +122,9 @@ const PaymentPage = ({ username }) => {
       </div>
       <div className="info flex justify-center items-center my-24 w-full flex-col gap-2">
         <div className="text-lg font-bold">@{username}</div>
-        <div className="text-slate-400">Creating animated art for VTTs</div>
+        <div className="text-slate-400">Let's help {username} get a chai</div>
         <div className="text-slate-400">
-          9719 members . 82 posts . 1.2k followers . $15,450/releases
+          {payments.length} payments . ₹{payments.reduce((acc, payment) => acc + payment.amount, 0).toLocaleString('en-IN')} raised
         </div>
         <div className="payments flex gap-3 w-[80%] mt-11">
           <div className="supporters w-1/2 bg-slate-900 rounded-lg p-10 text-white h-[450px] overflow-y-auto custom-scrollbar">
@@ -104,7 +141,7 @@ const PaymentPage = ({ username }) => {
                     <img width={33} src="avatar.gif" alt="" />
                     <span>
                       {payment.name} donated{" "}
-                      <span className="font-bold">₹{payment.amount / 100}</span>
+                      <span className="font-bold">₹{payment.amount}</span>
                       . {payment.message}
                     </span>
                   </li>
@@ -135,7 +172,7 @@ const PaymentPage = ({ username }) => {
                 onChange={handleChange}
                 name="amount"
                 value={paymentForm.amount}
-                type="text"
+                type="number"
                 className="w-full p-3 rounded-lg bg-slate-800"
                 placeholder="Enter Amount"
               />
@@ -148,7 +185,8 @@ const PaymentPage = ({ username }) => {
                   }
                   pay(amount * 100);
                 }}
-                className="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-4 py-2.5 text-center leading-5"
+                className="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-4 py-2.5 text-center leading-5 disabled:from-purple-300"
+                disabled={!paymentForm.amount || Number(paymentForm.amount) <= 0 || !paymentForm.name || !paymentForm.message}
               >
                 Pay
               </button>

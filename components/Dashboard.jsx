@@ -24,7 +24,7 @@ const Dashboard = () => {
   }, []);
 
   const getData = async () => {
-    let u = await fetchUser(session.user.name);
+    let u = await fetchUser(session.user.email);
     setform(u);
   };
 

@@ -1,8 +1,12 @@
 import React from "react";
 import PaymentPage from "@/components/paymentPage";
+import { notFound } from "next/navigation";
 
 const Username = async ({ params }) => {
   const allparams = await params;
+  if (!allparams.username) {
+    return notFound();
+  }
   return (
     <> 
       <PaymentPage username={allparams.username} />

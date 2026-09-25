@@ -7,28 +7,36 @@ import User from "@/app/models/Users";
 
 export const initiate = async (amount, to_username, paymentform) => {
     await connectDb();
+    let user = await User.findOne({username: to_username});
+    const secret = user.razorpaySecret;
     let instance = new Razorpay({
-        key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        key_secret: process.env.KEY_SECRET,
+        key_id: user.razorpayId,
+        key_secret: secret,
     });
     let options = {
         amount: Number.parseInt(amount),
         currency: "INR",
     }
     let x = await instance.orders.create(options);
-    await Payment.create({oid: x.id, amount: amount, to_user: to_username, name: paymentform.name, message: paymentform.message})
+    await Payment.create({oid: x.id, amount: amount/100, to_user: to_username, name: paymentform.name, message: paymentform.message})
     return x;
 }
 
-export const fetchUser = async (username) => {
+export const fetchUser = async (email) => {
     await connectDb();
-    let user = await User.findOne({username: username});
-    if(!user){
-        throw new Error("User not found");
+
+    console.log("Email received:", email);
+
+    let user = await User.findOne({ email: email});
+
+    console.log("User found:", user);
+
+    if (!user) {
+        throw new Error(`User not found: ${username}`);
     }
-    user = user.toObject({flattenObjectIds: true});
-    return user;
-}
+
+    return user.toObject({ flattenObjectIds: true });
+};
 
 export const fetchPayments = async (username) => {
     await connectDb();
@@ -39,40 +47,25 @@ export const fetchPayments = async (username) => {
     }));
 }
 
-export const updateProfile = async (data, oldUsername) => {
-    await connectDb();
+export const updateProfile = async (data, oldusername) => {
+    await connectDb()
+    let ndata = Object.fromEntries(data)
 
-    const ndata = Object.fromEntries(data);
-    console.log("DATA RECEIVED:", ndata);
-
-    // Check if username is being changed
-    if (ndata.username && ndata.username !== oldUsername) {
-
-        // Check whether another user already has this username
-        const existingUser = await User.findOne({
-            username: ndata.username
-        });
-
-        if (existingUser) {
-            return {
-                error: "Username already exists"
-            };
-        }
+    // If the username is being updated, check if username is available
+    if (oldusername !== ndata.username) {
+        let u = await User.findOne({ username: ndata.username })
+        if (u) {
+            return { error: "Username already exists" }
+        }   
+        await User.updateOne({email: ndata.email}, ndata)
+        // Now update all the usernames in the Payments table 
+        await Payment.updateMany({to_user: oldusername}, {to_user: ndata.username})
+        
     }
-
-    // Update the user using the OLD username
-    await User.updateOne(
-        { username: oldUsername },
-        { $set: ndata }
-    );
-
-    let u = await User.findOne({ username: ndata.username});
-    console.log("Updated User:", u);
-
-    return {
-        success: true
-    };
-};
+    else{
+        await User.updateOne({email: ndata.email}, ndata)
+    }
+}
 
 export const fetchUserByEmail = async (email) => {
     await connectDb();
