@@ -14,17 +14,22 @@ const Dashboard = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    console.log(session);
-
-    if (!session) {
-      router.push("/login");
-    } else {
-      getData();
+    if (status === "loading") {
+        return;
     }
-  }, []);
+
+    if (status === "unauthenticated") {
+        router.push("/login");
+        return;
+    }
+
+    if (status === "authenticated") {
+        getData();
+    }
+}, [status]);
 
   const getData = async () => {
-    let u = await fetchUser(session.user.email);
+    let u = await fetchUser(session.user.username);
     setform(u);
   };
 
@@ -33,7 +38,7 @@ const Dashboard = () => {
   };
 
   const handleSubmit = async (e) => {
-    let a = await updateProfile(e, session.user.name);
+    let a = await updateProfile(e, session.user.email);
     toast("Profile Updated", {
       position: "top-right",
       autoClose: 5000,

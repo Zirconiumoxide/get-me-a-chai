@@ -1,5 +1,5 @@
 "use client";
-import React, {useState, useRef, useEffect} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,26 +10,26 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target)
-    ) {
-      setShowDropdown(false);
-    }
-  };
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
 
-  document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
 
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const navigate = useRouter();
   return (
-    <nav className="bg-gray-800 text-white p-4 flex justify-between">
-      <Link href="/" className="logo font-bold text-lg flex justify-center items-center">
+    <nav className="bg-gray-800 text-white p-4 flex justify-between md:h-16 flex-col md:flex-row items-center">
+      <Link
+        href="/"
+        className="logo font-bold text-lg flex justify-center items-center"
+      >
         <img src="/tea.gif" width={44} alt="" />
         <span className="ml-2">Get me a Chai</span>
       </Link>
@@ -38,12 +38,27 @@ const Navbar = () => {
           <>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              id="dropdownDefaultButton"
-              data-dropdown-toggle="dropdown"
-              className="inline-flex mx-4 items-center justify-center text-white bg-blue-500 box-border border border-transparent hover:bg-blue-600 hover:ring-4 hover:ring-blue-300 shadow-xs font-medium leading-5 text-sm px-4 py-2.5 hover:outline-none rounded-2xl cursor-pointer"
+              className="
+    inline-flex items-center justify-center
+    text-white bg-blue-500
+    border border-transparent
+    hover:bg-blue-600
+    hover:ring-4 hover:ring-blue-300
+    shadow-xs font-medium
+    leading-5
+    text-xs sm:text-sm
+    px-3 sm:px-4
+    py-2 sm:py-2.5
+    rounded-2xl
+    cursor-pointer
+    max-w-full
+  "
               type="button"
             >
-              Welcome, {session.user.email}
+              <span className="truncate max-w-[150px] sm:max-w-none">
+                Welcome, {session.user.email}
+              </span>
+
               <svg
                 className="w-4 h-4 ms-1.5 -me-0.5"
                 aria-hidden="true"
@@ -53,19 +68,20 @@ const Navbar = () => {
                 fill="none"
                 viewBox="0 0 24 24"
               >
+                {" "}
                 <path
                   stroke="currentColor"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
                   d="m19 9-7 7-7-7"
-                />
+                />{" "}
               </svg>
             </button>
 
             <div
               id="dropdown"
-              className={`z-10 ${showDropdown ? '' : 'hidden'} border border-default-medium rounded-lg shadow-lg w-44 absolute right-0 mt-2 bg-[oklch(0.28_0.03_257.69)]`}
+              className={`z-10 ${showDropdown ? "" : "hidden"} border border-default-medium rounded-lg shadow-lg w-44 absolute right-0 mt-2 bg-[oklch(0.28_0.03_257.69)]`}
             >
               <ul
                 className="p-2 text-sm text-body font-medium"
@@ -81,7 +97,7 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link
-                    href={`/${session.user.name}`}
+                    href={`/${session.user.username}`}
                     className="inline-flex items-center w-full p-2 hover:bg-gray-700 hover:text-white rounded cursor-pointer"
                   >
                     Your Page

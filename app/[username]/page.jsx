@@ -15,3 +15,10 @@ const Username = async ({ params }) => {
 };
 
 export default Username;
+
+export async function generateMetadata({ params }) {
+  const allparams = await params;
+  return {
+    title: `Support ${allparams.username} - Buy me a Chai`,
+  }
+}

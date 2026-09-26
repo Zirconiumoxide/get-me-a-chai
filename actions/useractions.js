@@ -22,17 +22,13 @@ export const initiate = async (amount, to_username, paymentform) => {
     return x;
 }
 
-export const fetchUser = async (email) => {
+export const fetchUser = async (username) => {
     await connectDb();
 
-    console.log("Email received:", email);
-
-    let user = await User.findOne({ email: email});
-
-    console.log("User found:", user);
+    let user = await User.findOne({ username: username});
 
     if (!user) {
-        throw new Error(`User not found: ${username}`);
+        return null; // Return null if user is not found
     }
 
     return user.toObject({ flattenObjectIds: true });
@@ -47,25 +43,45 @@ export const fetchPayments = async (username) => {
     }));
 }
 
-export const updateProfile = async (data, oldusername) => {
-    await connectDb()
-    let ndata = Object.fromEntries(data)
+export const updateProfile = async (data, email) => {
+    await connectDb();
 
-    // If the username is being updated, check if username is available
-    if (oldusername !== ndata.username) {
-        let u = await User.findOne({ username: ndata.username })
-        if (u) {
-            return { error: "Username already exists" }
-        }   
-        await User.updateOne({email: ndata.email}, ndata)
-        // Now update all the usernames in the Payments table 
-        await Payment.updateMany({to_user: oldusername}, {to_user: ndata.username})
-        
+    const ndata = Object.fromEntries(data);
+
+    // Find the user using their email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        return { error: "User not found" };
     }
-    else{
-        await User.updateOne({email: ndata.email}, ndata)
+
+    // Check whether username is being changed
+    if (user.username !== ndata.username) {
+        const existingUser = await User.findOne({
+            username: ndata.username
+        });
+
+        if (existingUser) {
+            return { error: "Username already exists" };
+        }
+
+        // Update payments referring to the old username
+        await Payment.updateMany(
+            { to_user: user.username },
+            { $set: { to_user: ndata.username } }
+        );
     }
-}
+
+    // Don't allow the client to change the email used to identify the account
+    delete ndata.email;
+
+    await User.updateOne(
+        { email },
+        { $set: ndata }
+    );
+
+    return { success: true };
+};
 
 export const fetchUserByEmail = async (email) => {
     await connectDb();

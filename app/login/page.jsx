@@ -8,17 +8,18 @@ const Login = () => {
   const {data: session} = useSession();
   const router = useRouter();
   useEffect(() => {
+    document.title = "Login - Get me a Chai"
     if(session){
         router.replace("/dashboard")
     }
-  }, [session, router])
+  }, [router, session])
   
 
   return (
     <>
       <div className="text-white flex flex-col justify-center items-center h-[25vh]">
         <h1 className="font-bold text-3xl">
-          Login to get your fans to support you
+          Login to get started
         </h1>
       </div>
       <div className="social-login-buttons mx-auto w-full flex justify-center">

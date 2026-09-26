@@ -31,11 +31,11 @@ const authOptions = NextAuth({
                         email: user.email,
                     });
 
-                    user.name = newUser.username;
+                    user.username = newUser.username;
 
                 } else {
 
-                    user.name = currentUser.username;
+                    user.username = currentUser.username;
 
                 }
 
@@ -54,7 +54,7 @@ const authOptions = NextAuth({
             });
 
             if (dbUser) {
-                session.user.name = dbUser.username;
+                session.user.username = dbUser.username;
             }
 
             return session;
